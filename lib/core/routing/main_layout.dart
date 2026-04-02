@@ -14,16 +14,19 @@ class MainLayout extends StatefulWidget {
 class _MainLayoutState extends State<MainLayout> {
   int _currentIndex = 0;
 
-  // 👈 Update List to 3 items
-  final List<Widget> _screens = [
-    const DashboardScreen(),
-    const TransactionsScreen(),
-    const GoalsScreen(),
-    const ProfileScreen(),
-  ];
+  void _navigateToTransactions() {
+    setState(() => _currentIndex = 1);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> _screens = [
+      DashboardScreen(onNavigateToTransactions: _navigateToTransactions),
+      const TransactionsScreen(),
+      const GoalsScreen(),
+      const ProfileScreen(),
+    ];
+
     return Scaffold(
       body: _screens[_currentIndex],
       bottomNavigationBar: NavigationBar(

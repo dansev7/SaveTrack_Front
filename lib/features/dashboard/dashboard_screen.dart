@@ -8,7 +8,9 @@ import '../transactions/add_transaction_sheet.dart';
 import 'package:go_router/go_router.dart';
 
 class DashboardScreen extends ConsumerWidget {
-  const DashboardScreen({super.key});
+  final VoidCallback? onNavigateToTransactions;
+  
+  const DashboardScreen({super.key, this.onNavigateToTransactions});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -57,27 +59,62 @@ class DashboardScreen extends ConsumerWidget {
         ),
         data: (data) {
           if (data == null) return const Center(child: Text("No data found."));
+          
+          // Get only the latest 10 transactions
+          final recentTransactions = data.recentTransactions.take(10).toList();
+          
           return RefreshIndicator(
             color: Colors.tealAccent,
             backgroundColor: const Color(0xFF1E1E1E),
             onRefresh: () async => ref.invalidate(dashboardDataProvider),
-            child: ListView(
-              padding: const EdgeInsets.all(20),
+            child: Column(
               children: [
-                _buildBalanceCards(data.totalBalance, data.monthlySavings),
-                const SizedBox(height: 24),
-                _buildSummaryRow(data.monthlyIncome, data.monthlyExpenses, data.monthlySavings),
-                const SizedBox(height: 32),
-                const Text(
-                  "Recent Transactions",
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                // Fixed Balance and Summary Cards
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      _buildBalanceCards(data.totalBalance, data.monthlySavings),
+                      const SizedBox(height: 24),
+                      _buildSummaryRow(data.monthlyIncome, data.monthlyExpenses, data.monthlySavings),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 16),
-                ...data.recentTransactions
-                    .map((tx) => _buildTransactionTile(context, tx)),
+                // Fixed Recent Transactions Header
+                Container(
+                  color: const Color(0xFF121212),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Recent Transactions",
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white),
+                      ),
+                      TextButton(
+                        onPressed: onNavigateToTransactions ?? () {}, // Navigate to transactions tab
+                        child: const Text(
+                          "View All",
+                          style: TextStyle(
+                            color: Colors.tealAccent,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Scrollable Recent Transactions List
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: recentTransactions.length,
+                    itemBuilder: (context, index) => _buildTransactionTile(context, recentTransactions[index]),
+                  ),
+                ),
               ],
             ),
           );
@@ -232,21 +269,12 @@ class DashboardScreen extends ConsumerWidget {
     
     final icon = isIncome
         ? Icons.trending_up
-        : (isSaving ? Icons.savings_outlined : Icons.trending_down);
+        : (isSaving ? Icons.trending_flat : Icons.trending_down);
     
     final prefix = isIncome || isSaving ? "+" : "-";
 
     return GestureDetector(
-      onTap: () {
-    // Trigger Bottom Sheet with Data
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: const Color(0xFF1E1E1E),
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-          builder: (context) => AddTransactionSheet(existingTransaction: tx),
-        );
-      },
+      onTap: onNavigateToTransactions ?? () {}, // Navigate to transactions screen instead of edit
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
