@@ -58,7 +58,8 @@ class GoalsScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(20),
               itemCount: goals.length,
               itemBuilder: (context, index) {
-                return _buildGoalCard(goals[index]);
+                // 👇 Pass context and ref
+                return _buildGoalCard(context, ref, goals[index]); 
               },
             ),
           );
@@ -67,131 +68,107 @@ class GoalsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildGoalCard(Goal goal) {
-    final currencyFormat = NumberFormat.currency(
-      symbol: '\$',
-      decimalDigits: 0,
-    );
-    // Ensure progress is between 0.0 and 1.0 for the indicator
+ Widget _buildGoalCard(BuildContext context, WidgetRef ref, Goal goal) {
+    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 0);
     final safeProgress = goal.progress.clamp(0.0, 1.0);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.tealAccent.withOpacity(0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
+    
+    // 👇 Wrap in Dismissible for Swipe-To-Delete
+    return Dismissible(
+      key: Key(goal.id),
+      direction: DismissDirection.endToStart, // Swipe right to left
+      background: Container(
+        margin: const EdgeInsets.only(bottom: 20),
+        decoration: BoxDecoration(color: Colors.redAccent, borderRadius: BorderRadius.circular(20)),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 24),
+        child: const Icon(Icons.delete_outline, color: Colors.white, size: 32),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                goal.name,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.tealAccent.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  "${(safeProgress * 100).toInt()}%",
-                  style: const TextStyle(
-                    color: Colors.tealAccent,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+      confirmDismiss: (direction) async {
+        // Show a confirmation dialog before deleting!
+        return await showDialog(
+          context: context,
+          builder: (BuildContext ctx) => AlertDialog(
+            backgroundColor: const Color(0xFF1E1E1E),
+            title: const Text('Delete Goal?', style: TextStyle(color: Colors.white)),
+            content: const Text('Are you sure you want to delete this goal? This cannot be undone.', style: TextStyle(color: Colors.white70)),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel', style: TextStyle(color: Colors.grey))),
+              TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Delete', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold))),
             ],
           ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        );
+      },
+      onDismissed: (direction) {
+        // Perform the delete action
+        ref.read(goalsControllerProvider.notifier).deleteGoal(goal.id);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Goal Deleted"), backgroundColor: Colors.redAccent));
+      },
+      // 👇 Wrap the actual card in a GestureDetector for Tap-To-Edit
+      child: GestureDetector(
+        onTap: () => _showAddGoalSheet(context, ref, goal),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E1E1E),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.tealAccent.withOpacity(0.1)),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 5))],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                currencyFormat.format(goal.currentAmount),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(goal.name, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(color: Colors.tealAccent.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                    child: Text("${(safeProgress * 100).toInt()}%", style: const TextStyle(color: Colors.tealAccent, fontWeight: FontWeight.bold)),
+                  )
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(currencyFormat.format(goal.currentAmount), style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                  Text("of ${currencyFormat.format(goal.targetAmount)}", style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: LinearProgressIndicator(
+                  value: safeProgress, minHeight: 10,
+                  backgroundColor: Colors.white.withOpacity(0.05),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.tealAccent),
                 ),
               ),
-              Text(
-                "of ${currencyFormat.format(goal.targetAmount)}",
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
-                  fontSize: 14,
-                ),
-              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Icon(Icons.calendar_today, size: 14, color: Colors.white.withOpacity(0.5)),
+                  const SizedBox(width: 6),
+                  Text("Target: ${DateFormat('MMM yyyy').format(goal.deadline)}", style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),
+                ],
+              )
             ],
           ),
-          const SizedBox(height: 16),
-          // Beautiful Progress Bar
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: LinearProgressIndicator(
-              value: safeProgress,
-              minHeight: 10,
-              backgroundColor: Colors.white.withOpacity(0.05),
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                Colors.tealAccent,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Icon(
-                Icons.calendar_today,
-                size: 14,
-                color: Colors.white.withOpacity(0.5),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                "Target: ${DateFormat('MMM yyyy').format(goal.deadline)}",
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
-
-  // Placeholder for the Add Goal Sheet (we will build the actual form next if you want!)
-  void _showAddGoalSheet(BuildContext context, WidgetRef ref) {
+  // 👇 Add the optional Goal parameter
+  void _showAddGoalSheet(BuildContext context, WidgetRef ref, [Goal? goal]) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled:
-          true, // This allows the sheet to resize when the keyboard pops up!
+      isScrollControlled: true, 
       backgroundColor: const Color(0xFF1E1E1E),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => const AddGoalSheet(),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (context) => AddGoalSheet(existingGoal: goal), // Pass it to the sheet
     );
   }
 }

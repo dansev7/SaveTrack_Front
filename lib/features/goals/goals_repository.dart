@@ -41,4 +41,27 @@ class GoalsRepository {
       );
     }
   }
+
+  // 👇 ADD THESE NEW METHODS 👇
+  Future<ApiResult<Goal>> updateGoal(String id, CreateGoalDto dto) async {
+    try {
+      final response = await _dio.put('/Goals/$id', data: dto.toJson());
+      return ApiResult.fromJson(
+        response.data, 
+        (json) => Goal.fromJson(json as Map<String, dynamic>)
+      );
+    } on DioException catch (e) {
+      return ApiResult(isSuccess: false, message: e.response?.data['message'] ?? "Failed to update goal");
+    }
+  }
+
+  Future<ApiResult<void>> deleteGoal(String id) async {
+    try {
+      await _dio.delete('/Goals/$id');
+      // Delete typically returns just the base Result, no generic data
+      return ApiResult(isSuccess: true, message: "Goal deleted");
+    } on DioException catch (e) {
+      return ApiResult(isSuccess: false, message: e.response?.data['message'] ?? "Failed to delete goal");
+    }
+  }
 }
