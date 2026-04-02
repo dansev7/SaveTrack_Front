@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:save_track/features/profile/profile_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/transactions/transactions_screen.dart'; // 👈 Import new screen
 import '../../features/goals/goals_screen.dart';
@@ -18,6 +19,7 @@ class _MainLayoutState extends State<MainLayout> {
     const DashboardScreen(),
     const TransactionsScreen(),
     const GoalsScreen(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -45,6 +47,11 @@ class _MainLayoutState extends State<MainLayout> {
             icon: Icon(Icons.track_changes_outlined, color: Colors.white54),
             selectedIcon: Icon(Icons.track_changes, color: Colors.tealAccent),
             label: 'Goals',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline, color: Colors.white54),
+            selectedIcon: Icon(Icons.person, color: Colors.tealAccent),
+            label: 'Profile',
           ),
         ],
       ),

@@ -22,50 +22,6 @@ class DashboardScreen extends ConsumerWidget {
         elevation: 0,
         title: const Text('Overview',
             style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.tealAccent),
-            onPressed: () {
-              // Show the Confirmation Dialog
-              showDialog(
-                context: context,
-                builder: (BuildContext ctx) {
-                  return AlertDialog(
-                    backgroundColor: const Color(0xFF1E1E1E), // Match our dark theme
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
-                    title: const Text('Logout',
-                        style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold)),
-                    content: const Text('Are you sure you want to log out?',
-                        style: TextStyle(color: Colors.white70)),
-                    actions: [
-                      // Cancel Button
-                      TextButton(
-                        onPressed: () =>
-                            Navigator.of(ctx).pop(), // Just close the dialog
-                        child: const Text('Cancel',
-                            style: TextStyle(color: Colors.grey)),
-                      ),
-                      // Confirm Logout Button
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(ctx).pop(); // Close the dialog first
-                          ref.read(authControllerProvider.notifier).logout();
-                          context.go('/login'); // Route to login screen
-                        },
-                        child: const Text('Logout',
-                            style: TextStyle(
-                                color: Colors.redAccent,
-                                fontWeight: FontWeight.bold)),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-        ],
       ),
      floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.tealAccent,
