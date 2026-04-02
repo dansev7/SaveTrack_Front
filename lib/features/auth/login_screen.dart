@@ -194,7 +194,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
                           ),
-                        ]
+                        ],
+                        // 👇 ADD THIS BUTTON 👇
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () => context.go('/register'),
+                          child: const Text(
+                            "Don't have an account? Sign up", 
+                            style: TextStyle(color: Colors.tealAccent)
+                          ),
+                        )
                       ],
                     ),
                   ),

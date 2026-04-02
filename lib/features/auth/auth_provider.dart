@@ -26,6 +26,23 @@ class AuthController extends _$AuthController {
     }
   }
 
+  // 👇 ADD THIS NEW METHOD FOR REGISTRATION 👇
+// Updated Registration Method
+  Future<bool> register(String name, String email, String password) async {
+    state = const AsyncValue.loading();
+    
+    final result = await AuthRepository().register(name, email, password);
+    
+    if (result.isSuccess) {
+      // We do NOT save the token here. We want them to log in manually.
+      state = const AsyncValue.data(null); 
+      return true;
+    } else {
+      state = AsyncValue.error(result.message ?? "Registration Failed", StackTrace.current);
+      return false;
+    }
+  }
+
   void logout() {
     StorageService.clear();
     state = const AsyncValue.data(null);

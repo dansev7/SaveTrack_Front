@@ -24,10 +24,34 @@ class DashboardScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.tealAccent),
             onPressed: () {
-              // 1. Clear the token and state
-              ref.read(authControllerProvider.notifier).logout();
-              // 2. Route the user back to the login screen
-              context.go('/login');
+              // Show the Confirmation Dialog
+              showDialog(
+                context: context,
+                builder: (BuildContext ctx) {
+                  return AlertDialog(
+                    backgroundColor: const Color(0xFF1E1E1E), // Match our dark theme
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    title: const Text('Logout', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    content: const Text('Are you sure you want to log out?', style: TextStyle(color: Colors.white70)),
+                    actions: [
+                      // Cancel Button
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(), // Just close the dialog
+                        child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                      ),
+                      // Confirm Logout Button
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop(); // Close the dialog first
+                          ref.read(authControllerProvider.notifier).logout(); // Clear state
+                          context.go('/login'); // Route to login screen
+                        },
+                        child: const Text('Logout', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  );
+                },
+              );
             },
           ),
         ],
