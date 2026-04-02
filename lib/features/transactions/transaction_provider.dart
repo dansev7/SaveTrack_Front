@@ -28,4 +28,21 @@ class CreateTransactionController extends _$CreateTransactionController {
       return false;
     }
   }
+
+  // 👇 ADD THIS NEW METHOD 👇
+  Future<bool> updateTransaction(String id, CreateTransactionDto dto) async {
+    state = const AsyncValue.loading();
+    
+    final result = await TransactionRepository().updateTransaction(id, dto);
+    
+    if (result.isSuccess) {
+      state = const AsyncValue.data(null);
+      // Force dashboard to refresh with the updated data
+      ref.invalidate(dashboardDataProvider);
+      return true;
+    } else {
+      state = AsyncValue.error(result.message ?? "Failed to update", StackTrace.current);
+      return false;
+    }
+  }
 }

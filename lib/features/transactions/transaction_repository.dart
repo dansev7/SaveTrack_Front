@@ -23,4 +23,22 @@ class TransactionRepository {
       );
     }
   }
+
+  // 👇 ADD THIS NEW METHOD 👇
+  Future<ApiResult<Transaction>> updateTransaction(String id, CreateTransactionDto dto) async {
+    try {
+      final response = await _dio.put('/Transactions/$id', data: dto.toJson());
+      
+      return ApiResult.fromJson(
+        response.data, 
+        (json) => Transaction.fromJson(json as Map<String, dynamic>)
+      );
+    } on DioException catch (e) {
+      return ApiResult(
+        isSuccess: false, 
+        message: e.response?.data['message'] ?? "Failed to update transaction"
+      );
+    }
+  }
 }
+

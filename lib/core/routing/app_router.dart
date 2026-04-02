@@ -1,10 +1,9 @@
 import 'package:go_router/go_router.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/register_screen.dart'; // <-- Add this import
-import '../../features/transactions/create_transaction_screen.dart';
 import '../storage/storage_service.dart';
 import 'main_layout.dart';
-
+import '../../features/dashboard/dashboard_models.dart';
 final appRouter = GoRouter(
   initialLocation: '/login',
   redirect: (context, state) {
@@ -38,9 +37,6 @@ final appRouter = GoRouter(
       path: '/dashboard',
       builder: (context, state) => const MainLayout(),
     ),
-    GoRoute(
-      path: '/create-transaction',
-      builder: (context, state) => const CreateTransactionScreen(),
-    ),
+
   ],
 );
