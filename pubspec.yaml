@@ -1,0 +1,50 @@
+name: save_track
+description: "A modern personal finance tracker built with Flutter and ASP.NET Core."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # State Management (Updated to 2026 Stable/Compatible)
+  flutter_riverpod: ^3.0.1
+  riverpod_annotation: ^4.0.1  # Matches the new generator requirements
+
+  # Routing & Injection
+  go_router: ^14.2.0
+  get_it: ^8.0.0
+
+  # Networking & Utilities
+  dio: ^5.7.0
+  intl: ^0.20.0
+  uuid: ^4.5.0
+
+  # Local Storage (Latest Stable Hive CE)
+  hive_ce: ^2.19.3
+  hive_ce_flutter: ^2.3.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+  # Code Generation (The "Fix" versions)
+  build_runner: ^2.4.15  # Required for higher source_gen compatibility
+  riverpod_generator: ^4.0.3 # <--- This supports source_gen 4.x and analyzer 10
+  hive_ce_generator: ^1.11.0 # Pinned to 1.11.0 to match Riverpod
+
+
+
+
+flutter:
+  uses-material-design: true
+
+  # Add assets here as we build the UI
+  # assets:
+  #   - assets/images/
