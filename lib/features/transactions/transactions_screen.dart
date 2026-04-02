@@ -60,11 +60,11 @@ class TransactionsScreen extends ConsumerWidget {
   }
 
   Widget _buildTransactionTile(BuildContext context, Transaction tx) {
-    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    final currencyFormat = NumberFormat.currency(symbol: 'ETB ', decimalDigits: 2);
     final isIncome = tx.type == 0;
     final isSaving = tx.type == 2;
     final color = isIncome ? Colors.greenAccent : (isSaving ? Colors.blueAccent : Colors.redAccent);
-    final icon = isIncome ? Icons.add_circle_outline : (isSaving ? Icons.savings_outlined : Icons.remove_circle_outline);
+    final icon = isIncome ? Icons.trending_up : (isSaving ? Icons.savings_outlined : Icons.trending_down);
 
     return GestureDetector(
       onTap: () => _showTransactionSheet(context, tx), // 👈 Triggers Edit mode in the sheet!
@@ -81,7 +81,7 @@ class TransactionsScreen extends ConsumerWidget {
           title: Text(tx.description, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
           subtitle: Text(DateFormat('MMM dd, yyyy').format(tx.date), style: TextStyle(color: Colors.white.withOpacity(0.5))),
           trailing: Text(
-            "${isIncome ? '+' : '-'}${currencyFormat.format(tx.amount)}",
+            "${isIncome || isSaving ? '+' : '-'}${currencyFormat.format(tx.amount)}",
             style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16),
           ),
         ),

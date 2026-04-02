@@ -122,7 +122,7 @@ class _AddGoalSheetState extends ConsumerState<AddGoalSheet> {
               controller: _amountController, keyboardType: const TextInputType.numberWithOptions(decimal: true),
               style: const TextStyle(color: Colors.white),
               decoration: _buildInputDecoration('Target Amount', Icons.attach_money).copyWith(
-                prefixText: '\$ ', prefixStyle: const TextStyle(color: Colors.tealAccent, fontSize: 16),
+                prefixText: 'ETB ', prefixStyle: const TextStyle(color: Colors.tealAccent, fontSize: 16),
               ),
               validator: (val) => (val == null || val.isEmpty) ? 'Enter an amount' : null,
             ),

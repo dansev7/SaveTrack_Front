@@ -14,11 +14,23 @@ class Transaction {
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
+    // Robust type parsing (handles 0, 1, 2 OR "Income", "Expense", "Saving")
+    final rawType = json['type'].toString();
+    int parsedType;
+    if (rawType.toLowerCase() == 'income' || rawType == '0') {
+      parsedType = 0;
+    } else if (rawType.toLowerCase() == 'expense' || rawType == '1') {
+      parsedType = 1;
+    } else if (rawType.toLowerCase() == 'saving' || rawType == '2') {
+      parsedType = 2;
+    } else {
+      parsedType = 0; // Default
+    }
+
     return Transaction(
       id: json['id'].toString(),
-      // Bulletproof number parsing (handles both ints, doubles, and strings)
       amount: double.tryParse(json['amount'].toString()) ?? 0.0,
-      type: int.tryParse(json['type'].toString()) ?? 0,
+      type: parsedType,
       description: json['description']?.toString() ?? '',
       date: DateTime.parse(json['date'].toString()),
     );

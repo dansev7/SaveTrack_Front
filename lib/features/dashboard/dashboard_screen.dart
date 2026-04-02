@@ -64,9 +64,9 @@ class DashboardScreen extends ConsumerWidget {
             child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                _buildTotalBalanceCard(data.totalBalance),
+                _buildBalanceCards(data.totalBalance, data.monthlySavings),
                 const SizedBox(height: 24),
-                _buildSummaryRow(data.monthlyIncome, data.monthlyExpenses),
+                _buildSummaryRow(data.monthlyIncome, data.monthlyExpenses, data.monthlySavings),
                 const SizedBox(height: 32),
                 const Text(
                   "Recent Transactions",
@@ -86,59 +86,106 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTotalBalanceCard(double balance) {
-    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+  Widget _buildBalanceCards(double total, double savings) {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildBalanceCard(
+            "Balance",
+            total,
+            [const Color(0xFF004D40), const Color(0xFF00796B)],
+            Icons.account_balance_wallet_outlined,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildBalanceCard(
+            "Savings",
+            savings,
+            [const Color(0xFF1A237E), const Color(0xFF283593)],
+            Icons.savings_outlined,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBalanceCard(String title, double amount, List<Color> colors, IconData icon) {
+    final currencyFormat = NumberFormat.currency(symbol: 'ETB ', decimalDigits: 2);
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF004D40), Color(0xFF00796B)],
+        gradient: LinearGradient(
+          colors: colors,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.tealAccent.withOpacity(0.2),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            color: colors.first.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           )
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Total Balance",
-              style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 16)),
-          const SizedBox(height: 8),
-          Text(
-            currencyFormat.format(balance),
-            style: const TextStyle(
-                color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(title,
+                  style: TextStyle(
+                      color: Colors.white.withOpacity(0.8), fontSize: 13)),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1), shape: BoxShape.circle),
+                child: Icon(icon, color: Colors.white, size: 24),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              currencyFormat.format(amount),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSummaryRow(double income, double expense) {
-    return Row(
+  Widget _buildSummaryRow(double income, double expense, double savings) {
+    return Column(
       children: [
-        Expanded(
-            child: _buildSummaryCard(
-                "Income", income, Icons.arrow_downward, Colors.greenAccent)),
-        const SizedBox(width: 16),
-        Expanded(
-            child: _buildSummaryCard(
-                "Expense", expense, Icons.arrow_upward, Colors.redAccent)),
+        Row(
+          children: [
+            Expanded(
+                child: _buildSummaryCard(
+                    "Income", income, Icons.trending_up, Colors.greenAccent)),
+            const SizedBox(width: 16),
+            Expanded(
+                child: _buildSummaryCard(
+                    "Expense", expense, Icons.trending_down, Colors.redAccent)),
+          ],
+        ),
+        
       ],
     );
   }
 
   Widget _buildSummaryCard(
       String title, double amount, IconData icon, Color iconColor) {
-    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    final currencyFormat = NumberFormat.currency(symbol: 'ETB ', decimalDigits: 2);
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E1E), // Slightly lighter than background
@@ -173,16 +220,21 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildTransactionTile(BuildContext context, Transaction tx) {
-    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    final currencyFormat = NumberFormat.currency(symbol: 'ETB ', decimalDigits: 2);
+    
+    // 0: Income, 1: Expense, 2: Saving
     final isIncome = tx.type == 0;
     final isSaving = tx.type == 2;
 
-    final color = isIncome
-        ? Colors.greenAccent
+    final color = isIncome 
+        ? Colors.greenAccent 
         : (isSaving ? Colors.blueAccent : Colors.redAccent);
+    
     final icon = isIncome
-        ? Icons.add_circle_outline
-        : (isSaving ? Icons.savings_outlined : Icons.remove_circle_outline);
+        ? Icons.trending_up
+        : (isSaving ? Icons.savings_outlined : Icons.trending_down);
+    
+    final prefix = isIncome || isSaving ? "+" : "-";
 
     return GestureDetector(
       onTap: () {
@@ -219,7 +271,7 @@ class DashboardScreen extends ConsumerWidget {
             style: TextStyle(color: Colors.white.withOpacity(0.5)),
           ),
           trailing: Text(
-            "${isIncome ? '+' : '-'}${currencyFormat.format(tx.amount)}",
+            "$prefix${currencyFormat.format(tx.amount)}",
             style: TextStyle(
                 color: color, fontWeight: FontWeight.bold, fontSize: 16),
           ),
