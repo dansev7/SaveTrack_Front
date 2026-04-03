@@ -6,26 +6,39 @@ import 'dashboard_provider.dart';
 import 'dashboard_models.dart';
 import '../transactions/add_transaction_sheet.dart';
 import 'package:go_router/go_router.dart';
+import '../profile/profile_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
   final VoidCallback? onNavigateToTransactions;
-  
+
   const DashboardScreen({super.key, this.onNavigateToTransactions});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Watch the future provider
     final dashboardAsync = ref.watch(dashboardDataProvider);
+    final profileAsync = ref.watch(profileControllerProvider);
+
+    final profileName = profileAsync.maybeWhen(
+      data: (profile) => profile?.name ?? 'User',
+      orElse: () => 'User',
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFF121212), // Charcoal background
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF121212),
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Overview',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Text(
+          "Welcome, ${profileName.toUpperCase().split(' ').first}!",
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
       ),
-     floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.tealAccent,
         child: const Icon(Icons.add, color: Colors.black),
         onPressed: () {
@@ -34,35 +47,44 @@ class DashboardScreen extends ConsumerWidget {
             context: context,
             isScrollControlled: true,
             backgroundColor: const Color(0xFF1E1E1E),
-            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
             builder: (context) => const AddTransactionSheet(),
           );
         },
       ),
       body: dashboardAsync.when(
         loading: () => const Center(
-            child: CircularProgressIndicator(color: Colors.tealAccent)),
+          child: CircularProgressIndicator(color: Colors.tealAccent),
+        ),
         error: (err, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
+              const Icon(
+                Icons.error_outline,
+                color: Colors.redAccent,
+                size: 48,
+              ),
               const SizedBox(height: 16),
               Text(err.toString(), style: const TextStyle(color: Colors.white)),
               TextButton(
                 onPressed: () => ref.invalidate(dashboardDataProvider),
-                child: const Text("Retry",
-                    style: TextStyle(color: Colors.tealAccent)),
-              )
+                child: const Text(
+                  "Retry",
+                  style: TextStyle(color: Colors.tealAccent),
+                ),
+              ),
             ],
           ),
         ),
         data: (data) {
           if (data == null) return const Center(child: Text("No data found."));
-          
+
           // Get only the latest 10 transactions
           final recentTransactions = data.recentTransactions.take(10).toList();
-          
+
           return RefreshIndicator(
             color: Colors.tealAccent,
             backgroundColor: const Color(0xFF1E1E1E),
@@ -74,28 +96,41 @@ class DashboardScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      _buildBalanceCards(data.totalBalance, data.monthlySavings),
+                      _buildBalanceCards(
+                        data.totalBalance,
+                        data.monthlySavings,
+                      ),
                       const SizedBox(height: 24),
-                      _buildSummaryRow(data.monthlyIncome, data.monthlyExpenses, data.monthlySavings),
+                      _buildSummaryRow(
+                        data.monthlyIncome,
+                        data.monthlyExpenses,
+                        data.monthlySavings,
+                      ),
                     ],
                   ),
                 ),
                 // Fixed Recent Transactions Header
                 Container(
                   color: const Color(0xFF121212),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
                         "Recent Transactions",
                         style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                       TextButton(
-                        onPressed: onNavigateToTransactions ?? () {}, // Navigate to transactions tab
+                        onPressed:
+                            onNavigateToTransactions ??
+                            () {}, // Navigate to transactions tab
                         child: const Text(
                           "View All",
                           style: TextStyle(
@@ -112,7 +147,10 @@ class DashboardScreen extends ConsumerWidget {
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     itemCount: recentTransactions.length,
-                    itemBuilder: (context, index) => _buildTransactionTile(context, recentTransactions[index]),
+                    itemBuilder: (context, index) => _buildTransactionTile(
+                      context,
+                      recentTransactions[index],
+                    ),
                   ),
                 ),
               ],
@@ -127,28 +165,32 @@ class DashboardScreen extends ConsumerWidget {
     return Row(
       children: [
         Expanded(
-          child: _buildBalanceCard(
-            "Balance",
-            total,
-            [const Color(0xFF004D40), const Color(0xFF00796B)],
-            Icons.account_balance_wallet_outlined,
-          ),
+          child: _buildBalanceCard("Balance", total, [
+            const Color(0xFF004D40),
+            const Color(0xFF00796B),
+          ], Icons.account_balance_wallet_outlined),
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: _buildBalanceCard(
-            "Savings",
-            savings,
-            [const Color(0xFF1A237E), const Color(0xFF283593)],
-            Icons.savings_outlined,
-          ),
+          child: _buildBalanceCard("Savings", savings, [
+            const Color(0xFF1A237E),
+            const Color(0xFF283593),
+          ], Icons.savings_outlined),
         ),
       ],
     );
   }
 
-  Widget _buildBalanceCard(String title, double amount, List<Color> colors, IconData icon) {
-    final currencyFormat = NumberFormat.currency(symbol: 'ETB ', decimalDigits: 2);
+  Widget _buildBalanceCard(
+    String title,
+    double amount,
+    List<Color> colors,
+    IconData icon,
+  ) {
+    final currencyFormat = NumberFormat.currency(
+      symbol: 'ETB ',
+      decimalDigits: 2,
+    );
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -163,7 +205,7 @@ class DashboardScreen extends ConsumerWidget {
             color: colors.first.withOpacity(0.3),
             blurRadius: 8,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -172,13 +214,19 @@ class DashboardScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title,
-                  style: TextStyle(
-                      color: Colors.white.withOpacity(0.8), fontSize: 13)),
+              Text(
+                title,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.8),
+                  fontSize: 13,
+                ),
+              ),
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1), shape: BoxShape.circle),
+                  color: Colors.white.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
                 child: Icon(icon, color: Colors.white, size: 24),
               ),
             ],
@@ -189,9 +237,10 @@ class DashboardScreen extends ConsumerWidget {
             child: Text(
               currencyFormat.format(amount),
               style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold),
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -205,22 +254,38 @@ class DashboardScreen extends ConsumerWidget {
         Row(
           children: [
             Expanded(
-                child: _buildSummaryCard(
-                    "Income", income, Icons.trending_up, Colors.greenAccent)),
+              child: _buildSummaryCard(
+                "Income",
+                income,
+                Icons.trending_up,
+                Colors.greenAccent,
+              ),
+            ),
             const SizedBox(width: 16),
             Expanded(
-                child: _buildSummaryCard(
-                    "Expense", expense, Icons.trending_down, Colors.redAccent)),
+              child: _buildSummaryCard(
+                "Expense",
+                expense,
+                Icons.trending_down,
+                Colors.redAccent,
+              ),
+            ),
           ],
         ),
-        
       ],
     );
   }
 
   Widget _buildSummaryCard(
-      String title, double amount, IconData icon, Color iconColor) {
-    final currencyFormat = NumberFormat.currency(symbol: 'ETB ', decimalDigits: 2);
+    String title,
+    double amount,
+    IconData icon,
+    Color iconColor,
+  ) {
+    final currencyFormat = NumberFormat.currency(
+      symbol: 'ETB ',
+      decimalDigits: 2,
+    );
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -236,20 +301,29 @@ class DashboardScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                    color: iconColor.withOpacity(0.1), shape: BoxShape.circle),
+                  color: iconColor.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
                 child: Icon(icon, color: iconColor, size: 16),
               ),
               const SizedBox(width: 8),
-              Text(title,
-                  style: TextStyle(
-                      color: Colors.white.withOpacity(0.6), fontSize: 14)),
+              Text(
+                title,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: 14,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
           Text(
             currencyFormat.format(amount),
             style: const TextStyle(
-                color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
@@ -257,24 +331,29 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildTransactionTile(BuildContext context, Transaction tx) {
-    final currencyFormat = NumberFormat.currency(symbol: 'ETB ', decimalDigits: 2);
-    
+    final currencyFormat = NumberFormat.currency(
+      symbol: 'ETB ',
+      decimalDigits: 2,
+    );
+
     // 0: Income, 1: Expense, 2: Saving
     final isIncome = tx.type == 0;
     final isSaving = tx.type == 2;
 
-    final color = isIncome 
-        ? Colors.greenAccent 
+    final color = isIncome
+        ? Colors.greenAccent
         : (isSaving ? Colors.blueAccent : Colors.redAccent);
-    
+
     final icon = isIncome
         ? Icons.trending_up
         : (isSaving ? Icons.trending_flat : Icons.trending_down);
-    
+
     final prefix = isIncome || isSaving ? "+" : "-";
 
     return GestureDetector(
-      onTap: onNavigateToTransactions ?? () {}, // Navigate to transactions screen instead of edit
+      onTap:
+          onNavigateToTransactions ??
+          () {}, // Navigate to transactions screen instead of edit
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
@@ -282,18 +361,25 @@ class DashboardScreen extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16),
         ),
         child: ListTile(
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8,
+          ),
           leading: Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12)),
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Icon(icon, color: color),
           ),
-          title: Text(tx.description,
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.w600)),
+          title: Text(
+            tx.description,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           subtitle: Text(
             DateFormat('MMM dd, yyyy').format(tx.date),
             style: TextStyle(color: Colors.white.withOpacity(0.5)),
@@ -301,7 +387,10 @@ class DashboardScreen extends ConsumerWidget {
           trailing: Text(
             "$prefix${currencyFormat.format(tx.amount)}",
             style: TextStyle(
-                color: color, fontWeight: FontWeight.bold, fontSize: 16),
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
         ),
       ),
