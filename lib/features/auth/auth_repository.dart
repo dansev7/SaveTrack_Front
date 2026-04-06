@@ -18,9 +18,15 @@ class AuthRepository {
         (json) => AuthResponse.fromJson(json as Map<String, dynamic>),
       );
     } on DioException catch (e) {
+      String message = "Connection Error";
+      if (e.response?.data is Map<String, dynamic>) {
+        message = e.response!.data['message'] ?? message;
+      } else if (e.response?.data is String) {
+        message = e.response!.data;
+      }
       return ApiResult(
         isSuccess: false,
-        message: e.response?.data['message'] ?? "Connection Error",
+        message: message,
       );
     }
   }
@@ -39,9 +45,15 @@ class AuthRepository {
         (json) => AuthResponse.fromJson(json as Map<String, dynamic>)
       );
     } on DioException catch (e) {
+      String message = "Registration Failed";
+      if (e.response?.data is Map<String, dynamic>) {
+        message = e.response!.data['message'] ?? message;
+      } else if (e.response?.data is String) {
+        message = e.response!.data;
+      }
       return ApiResult(
         isSuccess: false, 
-        message: e.response?.data['message'] ?? "Registration Failed"
+        message: message,
       );
     }
   }

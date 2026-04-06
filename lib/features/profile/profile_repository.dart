@@ -21,9 +21,15 @@ class ProfileRepository {
         (json) => UserProfile.fromJson(json as Map<String, dynamic>)
       );
     } on DioException catch (e) {
+      String message = "Failed to load profile";
+      if (e.response?.data is Map<String, dynamic>) {
+        message = e.response!.data['message'] ?? message;
+      } else if (e.response?.data is String) {
+        message = e.response!.data;
+      }
       return ApiResult(
         isSuccess: false, 
-        message: e.response?.data['message'] ?? "Failed to load profile"
+        message: message,
       );
     }
   }
@@ -42,9 +48,15 @@ class ProfileRepository {
         (json) => UserProfile.fromJson(json as Map<String, dynamic>)
       );
     } on DioException catch (e) {
+      String message = "Failed to update profile";
+      if (e.response?.data is Map<String, dynamic>) {
+        message = e.response!.data['message'] ?? message;
+      } else if (e.response?.data is String) {
+        message = e.response!.data;
+      }
       return ApiResult(
         isSuccess: false, 
-        message: e.response?.data['message'] ?? "Failed to update profile"
+        message: message,
       );
     }
   }

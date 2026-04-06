@@ -15,9 +15,15 @@ class DashboardRepository {
         (json) => DashboardData.fromJson(json as Map<String, dynamic>),
       );
     } on DioException catch (e) {
+      String message = "Failed to load dashboard";
+      if (e.response?.data is Map<String, dynamic>) {
+        message = e.response!.data['message'] ?? message;
+      } else if (e.response?.data is String) {
+        message = e.response!.data;
+      }
       return ApiResult(
         isSuccess: false,
-        message: e.response?.data['message'] ?? "Failed to load dashboard",
+        message: message,
       );
     }
   }

@@ -19,9 +19,15 @@ class GoalsRepository {
         }
       );
     } on DioException catch (e) {
+      String message = "Failed to load goals";
+      if (e.response?.data is Map<String, dynamic>) {
+        message = e.response!.data['message'] ?? message;
+      } else if (e.response?.data is String) {
+        message = e.response!.data;
+      }
       return ApiResult(
         isSuccess: false, 
-        message: e.response?.data['message'] ?? "Failed to load goals"
+        message: message,
       );
     }
   }
@@ -35,9 +41,15 @@ class GoalsRepository {
         (json) => Goal.fromJson(json as Map<String, dynamic>)
       );
     } on DioException catch (e) {
+      String message = "Failed to create goal";
+      if (e.response?.data is Map<String, dynamic>) {
+        message = e.response!.data['message'] ?? message;
+      } else if (e.response?.data is String) {
+        message = e.response!.data;
+      }
       return ApiResult(
         isSuccess: false, 
-        message: e.response?.data['message'] ?? "Failed to create goal"
+        message: message,
       );
     }
   }
@@ -51,7 +63,13 @@ class GoalsRepository {
         (json) => Goal.fromJson(json as Map<String, dynamic>)
       );
     } on DioException catch (e) {
-      return ApiResult(isSuccess: false, message: e.response?.data['message'] ?? "Failed to update goal");
+      String message = "Failed to update goal";
+      if (e.response?.data is Map<String, dynamic>) {
+        message = e.response!.data['message'] ?? message;
+      } else if (e.response?.data is String) {
+        message = e.response!.data;
+      }
+      return ApiResult(isSuccess: false, message: message);
     }
   }
 
@@ -61,7 +79,13 @@ class GoalsRepository {
       // Delete typically returns just the base Result, no generic data
       return ApiResult(isSuccess: true, message: "Goal deleted");
     } on DioException catch (e) {
-      return ApiResult(isSuccess: false, message: e.response?.data['message'] ?? "Failed to delete goal");
+      String message = "Failed to delete goal";
+      if (e.response?.data is Map<String, dynamic>) {
+        message = e.response!.data['message'] ?? message;
+      } else if (e.response?.data is String) {
+        message = e.response!.data;
+      }
+      return ApiResult(isSuccess: false, message: message);
     }
   }
 }
