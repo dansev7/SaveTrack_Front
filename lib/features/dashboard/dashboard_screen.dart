@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../auth/auth_provider.dart';
 import 'dashboard_provider.dart';
 import 'dashboard_models.dart';
 import '../transactions/add_transaction_sheet.dart';
-import 'package:go_router/go_router.dart';
 import '../profile/profile_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
