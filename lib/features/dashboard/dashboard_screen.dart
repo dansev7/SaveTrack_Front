@@ -31,7 +31,7 @@ class DashboardScreen extends ConsumerWidget {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          "Welcome, ${profileName.toUpperCase().split(' ').first}!",
+          "Hello, ${profileName.split(' ').first}!",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
