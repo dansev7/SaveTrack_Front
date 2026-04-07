@@ -4,7 +4,6 @@ import '../../features/auth/register_screen.dart'; // <-- Add this import
 import '../../core/di/service_locator.dart';
 import '../../features/auth/auth_notifier.dart';
 import 'main_layout.dart';
-import '../../features/dashboard/dashboard_models.dart';
 final appRouter = GoRouter(
   initialLocation: '/login',
   refreshListenable: getIt<AuthNotifier>(),
