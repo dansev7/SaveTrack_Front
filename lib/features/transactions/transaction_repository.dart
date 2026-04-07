@@ -7,6 +7,20 @@ import 'transaction_models.dart';
 class TransactionRepository {
   final Dio _dio = getIt<Dio>();
 
+  Future<ApiResult<List<Transaction>>> getAllTransactions() async {
+  try {
+    // This hits your separate API endpoint
+    final response = await _dio.get('/Transactions'); 
+
+    return ApiResult.fromJson(
+      response.data,
+      (json) => (json as List).map((e) => Transaction.fromJson(e)).toList(),
+    );
+  } catch (e) {
+    return ApiResult(isSuccess: false, message: "Could not fetch full history");
+  }
+}
+
   Future<ApiResult<Transaction>> createTransaction(CreateTransactionDto dto) async {
     try {
       final response = await _dio.post('/Transactions', data: dto.toJson());

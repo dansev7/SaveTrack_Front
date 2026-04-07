@@ -2,8 +2,23 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'transaction_repository.dart';
 import 'transaction_models.dart';
 import '../dashboard/dashboard_provider.dart';
+import '../dashboard/dashboard_models.dart'; // To reuse the Transaction model
 
 part 'transaction_provider.g.dart';
+
+
+
+  // --- The Provider for your List View ---
+@riverpod
+Future<List<Transaction>> allTransactions(Ref ref) async {
+  final repo = TransactionRepository();
+  final result = await repo.getAllTransactions();
+  if (result.isSuccess) {
+    return result.data ?? [];
+  } else {
+    throw Exception(result.message);
+  }
+}
 
 @riverpod
 class CreateTransactionController extends _$CreateTransactionController {

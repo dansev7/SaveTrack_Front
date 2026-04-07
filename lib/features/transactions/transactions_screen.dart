@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../dashboard/dashboard_provider.dart';
+import './transaction_provider.dart';
 import '../dashboard/dashboard_models.dart';
 import 'add_transaction_sheet.dart';
 
@@ -19,46 +19,48 @@ class TransactionsScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final dashboardAsync = ref.watch(dashboardDataProvider);
+ @override
+Widget build(BuildContext context, WidgetRef ref) {
+  // 1. Watch the correct provider
+  final transactionsAsync = ref.watch(allTransactionsProvider);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: const Text('All Transactions', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.tealAccent,
-        child: const Icon(Icons.add, color: Colors.black),
-        onPressed: () => _showTransactionSheet(context),
-      ),
-      body: dashboardAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: Colors.tealAccent)),
-        error: (err, stack) => Center(child: Text(err.toString(), style: const TextStyle(color: Colors.redAccent))),
-        data: (data) {
-          if (data == null || data.recentTransactions.isEmpty) {
-            return const Center(child: Text("No transactions yet.", style: TextStyle(color: Colors.white70)));
-          }
+  return Scaffold(
+    backgroundColor: const Color(0xFF121212),
+    appBar: AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      title: const Text('All Transactions', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+    ),
+    floatingActionButton: FloatingActionButton(
+      backgroundColor: Colors.tealAccent,
+      child: const Icon(Icons.add, color: Colors.black),
+      onPressed: () => _showTransactionSheet(context),
+    ),
+    body: transactionsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator(color: Colors.tealAccent)),
+      error: (err, stack) => Center(child: Text(err.toString(), style: const TextStyle(color: Colors.redAccent))),
+      data: (transactions) { // 2. 'transactions' is now a List<Transaction>, not DashboardData
+        if (transactions.isEmpty) {
+          return const Center(child: Text("No transactions yet.", style: TextStyle(color: Colors.white70)));
+        }
 
-          return RefreshIndicator(
-            color: Colors.tealAccent,
-            backgroundColor: const Color(0xFF1E1E1E),
-            onRefresh: () async => ref.invalidate(dashboardDataProvider),
-            child: ListView.builder(
-              padding: const EdgeInsets.all(20),
-              itemCount: data.recentTransactions.length,
-              itemBuilder: (context, index) {
-                return _buildTransactionTile(context, data.recentTransactions[index]);
-              },
-            ),
-          );
-        },
-      ),
-    );
-  }
-
+        return RefreshIndicator(
+          color: Colors.tealAccent,
+          backgroundColor: const Color(0xFF1E1E1E),
+          // 3. Invalidate the specific list provider
+          onRefresh: () async => ref.invalidate(allTransactionsProvider),
+          child: ListView.builder(
+            padding: const EdgeInsets.all(20),
+            itemCount: transactions.length, // 4. Use the list length directly
+            itemBuilder: (context, index) {
+              return _buildTransactionTile(context, transactions[index]);
+            },
+          ),
+        );
+      },
+    ),
+  );
+}
   Widget _buildTransactionTile(BuildContext context, Transaction tx) {
     final currencyFormat = NumberFormat.currency(symbol: 'ETB ', decimalDigits: 2);
     final isIncome = tx.type == 0;

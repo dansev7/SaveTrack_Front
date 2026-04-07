@@ -9,6 +9,47 @@ part of 'transaction_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(allTransactions)
+final allTransactionsProvider = AllTransactionsProvider._();
+
+final class AllTransactionsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Transaction>>,
+          List<Transaction>,
+          FutureOr<List<Transaction>>
+        >
+    with
+        $FutureModifier<List<Transaction>>,
+        $FutureProvider<List<Transaction>> {
+  AllTransactionsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'allTransactionsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$allTransactionsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<Transaction>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<Transaction>> create(Ref ref) {
+    return allTransactions(ref);
+  }
+}
+
+String _$allTransactionsHash() => r'bdcb8dbf2238f87bca88ddf2ef2a88ebdd8cdbcb';
+
 @ProviderFor(CreateTransactionController)
 final createTransactionControllerProvider =
     CreateTransactionControllerProvider._();
