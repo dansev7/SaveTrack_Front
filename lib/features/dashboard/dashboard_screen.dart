@@ -346,7 +346,7 @@ class DashboardScreen extends ConsumerWidget {
 
     final icon = isIncome
         ? Icons.trending_up
-        : (isSaving ? Icons.trending_flat : Icons.trending_down);
+        : (isSaving ? Icons.savings_outlined : Icons.trending_down);
 
     final prefix = isIncome || isSaving ? "+" : "-";
 
