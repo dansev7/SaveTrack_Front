@@ -1,14 +1,16 @@
 import 'package:go_router/go_router.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/register_screen.dart'; // <-- Add this import
-import '../storage/storage_service.dart';
+import '../../core/di/service_locator.dart';
+import '../../features/auth/auth_notifier.dart';
 import 'main_layout.dart';
 import '../../features/dashboard/dashboard_models.dart';
 final appRouter = GoRouter(
   initialLocation: '/login',
+  refreshListenable: getIt<AuthNotifier>(),
   redirect: (context, state) {
-    final token = StorageService.getToken();
-    final isLoggedIn = token != null && token.isNotEmpty;
+    final authNotifier = getIt<AuthNotifier>();
+    final isLoggedIn = authNotifier.isLoggedIn;
     
     // Check if the user is on ANY auth screen
     final isAuthRoute = state.matchedLocation == '/login' || state.matchedLocation == '/register';

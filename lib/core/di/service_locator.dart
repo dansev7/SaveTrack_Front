@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
 import '../storage/storage_service.dart';
+import '../../features/auth/auth_notifier.dart';
 
 final getIt = GetIt.instance;
 
@@ -28,12 +29,12 @@ void setupLocator() {
     onError: (DioException e, handler) {
       if (e.response?.statusCode == 401) {
         // Token expired, clear storage and logout
-        StorageService.clear();
-        // You might want to navigate to login, but since it's global, perhaps emit an event or use a provider
+        getIt<AuthNotifier>().logout();
       }
       return handler.next(e);
     },
   ));
 
   getIt.registerSingleton<Dio>(dio);
+  getIt.registerSingleton<AuthNotifier>(AuthNotifier());
 }

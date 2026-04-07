@@ -2,6 +2,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart'; // Must be packag
 import 'auth_repository.dart';
 import 'auth_models.dart';
 import '../../core/storage/storage_service.dart';
+import '../../core/di/service_locator.dart';
+import 'auth_notifier.dart';
 
 part 'auth_provider.g.dart';
 
@@ -20,6 +22,7 @@ class AuthController extends _$AuthController {
     
     if (result.isSuccess && result.data != null) {
       await StorageService.saveToken(result.data!.token);
+      getIt<AuthNotifier>().login(result.data!.token);
       state = AsyncValue.data(result.data);
     } else {
       state = AsyncValue.error(result.message ?? "Login Failed", StackTrace.current);
@@ -44,7 +47,7 @@ class AuthController extends _$AuthController {
   }
 
   void logout() {
-    StorageService.clear();
+    getIt<AuthNotifier>().logout();
     state = const AsyncValue.data(null);
   }
 }
