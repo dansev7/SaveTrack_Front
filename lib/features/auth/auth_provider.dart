@@ -11,7 +11,7 @@ part 'auth_provider.g.dart';
 class AuthController extends _$AuthController {
   @override
   AsyncValue<AuthResponse?> build() {
-    final token = StorageService.getToken();
+    StorageService.getToken();
     return const AsyncValue.data(null);
   }
 
