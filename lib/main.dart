@@ -32,7 +32,6 @@ class SaveTrackApp extends StatelessWidget {
           seedColor: Colors.tealAccent,
           brightness: Brightness.dark,
         ),
-        useMaterial3: true,
       ),
       // Replace 'home' with router config
       routerConfig: appRouter, 

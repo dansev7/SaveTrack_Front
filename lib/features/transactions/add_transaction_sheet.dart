@@ -125,7 +125,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
 
             // TYPE DROPDOWN
             DropdownButtonFormField<int>(
-              value: _selectedType,
+              initialValue: _selectedType,
               dropdownColor: const Color(0xFF1E1E1E),
               style: const TextStyle(color: Colors.white, fontSize: 16),
               decoration: _buildInputDecoration('Type', Icons.category_outlined),

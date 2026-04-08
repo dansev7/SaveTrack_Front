@@ -20,7 +20,7 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> _screens = [
+    final List<Widget> screens = [
       DashboardScreen(onNavigateToTransactions: _navigateToTransactions),
       const TransactionsScreen(),
       const GoalsScreen(),
@@ -28,7 +28,7 @@ class _MainLayoutState extends State<MainLayout> {
     ];
 
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: screens[_currentIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: (index) => setState(() => _currentIndex = index),
