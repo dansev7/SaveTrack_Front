@@ -1,24 +1,42 @@
 import 'package:dio/dio.dart';
 import '../../core/di/service_locator.dart';
 import '../../core/models/api_result.dart';
+import '../../core/storage/storage_service.dart';
 import 'goal_models.dart';
 
 class GoalsRepository {
   final Dio _dio = getIt<Dio>();
+  final _storage = getIt<StorageService>();
 
+/// Fetch goals data with offline-first support
   Future<ApiResult<List<Goal>>> getGoals() async {
     try {
       final response = await _dio.get('/Goals');
       
       // The API returns a list inside the 'data' field
-      return ApiResult.fromJson(
+      // return ApiResult.fromJson(
+      final result = ApiResult.fromJson(
         response.data, 
         (json) {
           final list = json as List;
           return list.map((item) => Goal.fromJson(item)).toList();
         }
       );
+      if (result.isSuccess && result.data != null) {
+        await _storage.saveGoalsCache(result.data);
+      }
+      return result;
     } on DioException catch (e) {
+      // API Failed -> Try to serve from cache
+      final dynamic rawCachedData = _storage.getGoalsCache();
+      if (rawCachedData is List) {
+        final List<Goal> cachedData = rawCachedData.cast<Goal>();
+        return ApiResult(
+          isSuccess: true,
+          data: cachedData,
+          message: "Loaded from cache (Offline)",
+        );
+      }
       String message = "Failed to load goals";
       if (e.response?.data is Map<String, dynamic>) {
         message = e.response!.data['message'] ?? message;

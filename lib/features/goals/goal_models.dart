@@ -1,9 +1,20 @@
+import 'package:hive_ce/hive_ce.dart';
+
+part 'goal_models.g.dart';
+
+@HiveType(typeId: 2)
 class Goal {
+  @HiveField(0)
   final String id;
+  @HiveField(1)
   final String name;
+  @HiveField(2)
   final double targetAmount;
+  @HiveField(3)
   final double currentAmount;
+  @HiveField(4)
   final DateTime deadline;
+  @HiveField(5)
   final double progress;
 
   Goal({
@@ -29,9 +40,13 @@ class Goal {
 }
 
 // We also need a DTO for creating/updating a goal
+@HiveType(typeId: 3)
 class CreateGoalDto {
+  @HiveField(0)
   final String name;
+  @HiveField(1)
   final double targetAmount;
+  @HiveField(2)
   final DateTime deadline;
 
   CreateGoalDto({

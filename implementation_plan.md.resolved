@@ -1,0 +1,77 @@
+# Professional Hive Storage Implementation Plan
+
+This plan aims to upgrade the SaveTrack application's storage layer from basic key-value pairs to a structured, type-safe caching system using Hive. This will enable offline support and improve UI performance by serving cached data instantly.
+
+## User Review Required
+
+> [!IMPORTANT]
+> This plan involves running code generation via `build_runner`. Please ensures all files are saved before proceeding.
+> I will be modifying your domain models to add Hive annotations. This is a one-time breaking change for the storage format.
+
+> [!WARNING]
+> Refactoring `StorageService` from static methods to a class instance will require updates to where it is used (mostly throughout the codebase). I will handle these updates as part of the execution.
+
+## Proposed Changes
+
+### 1. Data Layer Enhancements (Domain Models)
+
+Modifying the domain models to support binary serialization with Hive.
+
+#### [MODIFY] [dashboard_models.dart](file:///d:/save_track/lib/features/dashboard/dashboard_models.dart)
+- Add `@HiveType(typeId: 0)` to `Transaction`.
+- Add `@HiveField(n)` to all fields in `Transaction`.
+- Add `@HiveType(typeId: 1)` to `DashboardData`.
+- Add `@HiveField(n)` to all fields in `DashboardData`.
+- Add `part 'dashboard_models.g.dart';` to the top of the file.
+
+#### [NEW] [hive_adapters.dart](file:///d:/save_track/lib/core/storage/hive_adapters.dart)
+- Create a central file to manage `typeId` constants to prevent future collisions.
+- Define a list of all adapters to be registered during app initialization.
+
+### 2. Storage Infrastructure
+
+Refactoring the storage layer for better testability and type-safety.
+
+#### [MODIFY] [storage_service.dart](file:///d:/save_track/lib/core/storage/storage_service.dart)
+- Convert to a class for use with `GetIt`.
+- Implement generic `save<T>(String key, T value)` and `get<T>(String key)` methods.
+- Define specific box constants (e.g., `_authBox`, `_cacheBox`).
+- Add logic to initialize and register adapters.
+
+#### [MODIFY] [service_locator.dart](file:///d:/save_track/lib/core/di/service_locator.dart)
+- Register `StorageService` as a singleton.
+- Ensure it is initialized before the app starts.
+
+### 3. Repository Integration (Offline-First Pattern)
+
+#### [MODIFY] [dashboard_repository.dart](file:///d:/save_track/lib/features/dashboard/dashboard_repository.dart)
+- Inject `StorageService`.
+- Modify `getDashboardData()`:
+  - Return cached data immediately if available (optional/configurable).
+  - Update cache upon successful API response.
+- Add `getCachedDashboardData()` method.
+
+### 4. Code Generation
+- Run `dart run build_runner build --delete-conflicting-outputs`.
+
+## Open Questions
+
+- **Encryption**: Should we implement `hive_flutter`'s built-in encryption for the Auth token now, or keep it simple for this sprint?
+- **Stale Data Policy**: Should we implement a "Cache Timeout" (e.g., 24 hours)? If data is older than the timeout, we could either show a warning or clear it.
+- **Unified Adapter Registration**: Do you prefer individual registrations in each feature or a single global `HiveAdapters.register()` call? (I recommend global for now).
+
+## Verification Plan
+
+### Automated Tests
+- Run `dart run build_runner build` and check for success.
+- Check that `.g.dart` files are generated correctly.
+
+### Manual Verification
+- **Login Flow**: Verify that the token is still saved and retrieved correctly after the refactor.
+- **Offline Mode**: 
+  1. Open app with internet.
+  2. Verify Dashboard loads.
+  3. Turn off internet.
+  4. Restart app.
+  5. Verify Dashboard still shows the last loaded data.
+- **Consistency**: Verify that "Saving" and "Total Balance" are still displayed correctly in ETB.

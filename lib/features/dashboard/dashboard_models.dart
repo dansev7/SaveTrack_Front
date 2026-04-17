@@ -1,8 +1,18 @@
+import 'package:hive_ce/hive_ce.dart';
+
+part 'dashboard_models.g.dart';
+
+@HiveType(typeId: 0)
 class Transaction {
+  @HiveField(0)
   final String id;
+  @HiveField(1)
   final double amount;
+  @HiveField(2)
   final int type; 
+  @HiveField(3)
   final String description;
+  @HiveField(4)
   final DateTime date;
 
   Transaction({
@@ -37,11 +47,17 @@ class Transaction {
   }
 }
 
+@HiveType(typeId: 1)
 class DashboardData {
+  @HiveField(0)
   final double totalBalance;
+  @HiveField(1)
   final double monthlyIncome;
+  @HiveField(2)
   final double monthlyExpenses;
+  @HiveField(3)
   final double monthlySavings;
+  @HiveField(4)
   final List<Transaction> recentTransactions;
 
   DashboardData({

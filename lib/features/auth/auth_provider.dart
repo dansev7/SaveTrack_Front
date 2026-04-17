@@ -1,7 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart'; // Must be package import
 import 'auth_repository.dart';
 import 'auth_models.dart';
-import '../../core/storage/storage_service.dart';
 import '../../core/di/service_locator.dart';
 import 'auth_notifier.dart';
 
@@ -11,7 +10,6 @@ part 'auth_provider.g.dart';
 class AuthController extends _$AuthController {
   @override
   AsyncValue<AuthResponse?> build() {
-    StorageService.getToken();
     return const AsyncValue.data(null);
   }
 
@@ -21,7 +19,6 @@ class AuthController extends _$AuthController {
     final result = await AuthRepository().login(email, password);
     
     if (result.isSuccess && result.data != null) {
-      await StorageService.saveToken(result.data!.token);
       getIt<AuthNotifier>().login(result.data!.token);
       state = AsyncValue.data(result.data);
     } else {

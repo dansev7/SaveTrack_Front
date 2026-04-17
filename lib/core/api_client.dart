@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import '../features/auth/auth_notifier.dart';
 import 'storage/storage_service.dart';
+import 'di/service_locator.dart';
 
 class ApiClient {
   late Dio dio;
@@ -23,7 +24,8 @@ class ApiClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          final token = StorageService.getToken();
+          final storageService = getIt<StorageService>();
+          final token = storageService.getToken();
           if (token != null && token.isNotEmpty) {
             options.headers["Authorization"] = "Bearer $token";
           }

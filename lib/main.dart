@@ -7,8 +7,9 @@ import 'core/routing/app_router.dart'; // <-- Import the router
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  await StorageService.init();
-  setupLocator();
+  final storageService = StorageService();
+  await storageService.init();
+  setupLocator(storageService);
   
   runApp(
     const ProviderScope(
