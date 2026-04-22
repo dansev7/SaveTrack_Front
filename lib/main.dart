@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/di/service_locator.dart';
 import 'core/storage/storage_service.dart';
 import 'core/routing/app_router.dart'; // <-- Import the router
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   
   final storageService = StorageService();
   await storageService.init();

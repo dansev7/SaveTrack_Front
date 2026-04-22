@@ -3,12 +3,13 @@ import 'package:get_it/get_it.dart';
 import '../features/auth/auth_notifier.dart';
 import 'storage/storage_service.dart';
 import 'di/service_locator.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiClient {
   late Dio dio;
   
   // Update this to your local IP if testing on a real device!
-  static const String baseUrl = "http://10.14.214.174:5115/api"; 
+  static final String baseUrl = dotenv.env['URL'] ?? 'http://10.14.214.38:5115/api';
 
   ApiClient() {
     dio = Dio(
